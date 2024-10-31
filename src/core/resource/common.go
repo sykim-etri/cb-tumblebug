@@ -1849,16 +1849,28 @@ func CreateSharedResource(nsId string, resType string, connectionName string) er
 				reqTmp.CidrBlock = "10.0.40.0/22"
 			}
 
+			// Try to assign a differente zone
+			zones, zonesCount, _ := GetFirstNZones(connectionName, 2)
+
 			// Consist 2 subnets (10.i.0.0/18, 10.i.64.0/18)
 			// Reserve spaces for tentative 2 subnets (10.i.128.0/18, 10.i.192.0/18)
 			subnetName := reqTmp.Name
 			subnetCidr := "10." + strconv.Itoa(sliceIndex) + ".0.0/18"
 			subnet := model.TbSubnetReq{Name: subnetName, IPv4_CIDR: subnetCidr}
+			if zones != nil {
+				subnet.Zone = zones[0]
+			}
 			reqTmp.SubnetInfoList = append(reqTmp.SubnetInfoList, subnet)
 
 			subnetName = reqTmp.Name + "-01"
 			subnetCidr = "10." + strconv.Itoa(sliceIndex) + ".64.0/18"
 			subnet = model.TbSubnetReq{Name: subnetName, IPv4_CIDR: subnetCidr}
+			if zones != nil {
+				subnet.Zone = zones[0]
+				if zonesCount > 1 {
+					subnet.Zone = zones[1]
+				}
+			}
 			reqTmp.SubnetInfoList = append(reqTmp.SubnetInfoList, subnet)
 
 			common.PrintJsonPretty(reqTmp)
